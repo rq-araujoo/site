@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Objetos Detectados</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; text-align: center; padding: 20px; }
+    table { margin: 20px auto; border-collapse: collapse; width: 80%; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background: #333; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Objetos Detectados</h1>
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Objeto</th>
+        <th>Contagem</th>
+        <th>Última Confiança</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const SUPABASE_URL = "https://mtvevttcezkldrsgyhug.supabase.co";
+    const SUPABASE_KEY = "SUA_CHAVE_PUBLICA_AQUI";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function carregarTabela() {
+      const corpo = document.querySelector("#tabela tbody");
+      corpo.innerHTML = "<tr><td colspan='3'>Carregando...</td></tr>";
+
+      try {
+        const { data, error } = await supabase
+          .from("objetos")
+          .select("objeto,count,ultima_confianca")
+          .order("count", { ascending: false });
+
+        if (error) {
+          corpo.innerHTML = `<tr><td colspan='3'>Erro: ${error.message}</td></tr>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          corpo.innerHTML = "<tr><td colspan='3'>Nenhum dado encontrado</td></tr>";
+          return;
+        }
+
+        corpo.innerHTML = "";
+        data.forEach(item => {
+          const conf = item.ultima_confianca ? item.ultima_confianca.toFixed(4) : "-";
+          corpo.innerHTML += `<tr>
+                                <td>${item.objeto}</td>
+                                <td>${item.count}</td>
+                                <td>${conf}</td>
+                              </tr>`;
+        });
+      } catch (err) {
+        corpo.innerHTML = `<tr><td colspan='3'>Erro ao carregar dados: ${err}</td></tr>`;
+      }
+    }
+
+    carregarTabela();
+    setInterval(carregarTabela, 5000); // atualiza a cada 5s
+  </script>
+</body>
+</html>
