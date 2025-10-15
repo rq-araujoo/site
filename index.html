@@ -5,10 +5,11 @@
   <title>Objetos Detectados</title>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: Arial; background: #f4f4f4; text-align: center; padding: 20px; }
-    table { margin: 20px auto; border-collapse: collapse; width: 80%; background: white; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; text-align: center; padding: 20px; }
+    table { margin: 20px auto; border-collapse: collapse; width: 80%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ccc; padding: 10px; font-size: 16px; }
     th { background: #333; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
   </style>
 </head>
 <body>
@@ -26,18 +27,19 @@
 
   <script>
     const SUPABASE_URL = "https://mtvevttcezkldrsgyhug.supabase.co";
-    const SUPABASE_KEY = "SUA_CHAVE_PUBLICA_AQUI";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10dmV2dHRjZXprbGRyc2d5aHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjYzMzAsImV4cCI6MjA3NjEwMjMzMH0.oassKT6J_moQyXROz9pvXkI_2eIYCT07IFXgeei21xg";
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function carregarTabela() {
       const corpo = document.querySelector("#tabela tbody");
       corpo.innerHTML = "<tr><td colspan='3'>Carregando...</td></tr>";
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await client
           .from("objetos")
-          .select("objeto,count,ultima_confianca")
-          .order("count", { ascending: false });
+          .select('objeto,"count",ultima_confianca')
+          .order('"count"', { ascending: false });
 
         if (error) {
           corpo.innerHTML = `<tr><td colspan='3'>Erro: ${error.message}</td></tr>`;
@@ -52,11 +54,13 @@
         corpo.innerHTML = "";
         data.forEach(item => {
           const conf = item.ultima_confianca ? item.ultima_confianca.toFixed(4) : "-";
-          corpo.innerHTML += `<tr>
-                                <td>${item.objeto}</td>
-                                <td>${item.count}</td>
-                                <td>${conf}</td>
-                              </tr>`;
+          corpo.innerHTML += `
+            <tr>
+              <td>${item.objeto}</td>
+              <td>${item.count}</td>
+              <td>${conf}</td>
+            </tr>
+          `;
         });
       } catch (err) {
         corpo.innerHTML = `<tr><td colspan='3'>Erro ao carregar dados: ${err}</td></tr>`;
@@ -64,7 +68,7 @@
     }
 
     carregarTabela();
-    setInterval(carregarTabela, 5000); // atualiza a cada 5s
+    setInterval(carregarTabela, 5000); // Atualiza a cada 5 segundos
   </script>
 </body>
 </html>
